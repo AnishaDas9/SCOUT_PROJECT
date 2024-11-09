@@ -7,7 +7,7 @@ const attendanceschema = new mongoose.Schema({
     },
     usertype:{
         type:String,
-        enum:["Labour","Salesmanager"],
+        enum:["labour","salesmanager"],
         required: true
     },
     date:{

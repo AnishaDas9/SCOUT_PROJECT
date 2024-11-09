@@ -2,8 +2,8 @@ import { Salesmanager } from "../models/salesmanager.model.js";
 import { Labour } from "../models/labour.model.js";
 import { Attendance } from "../models/attendance.model.js";
 import { Salary } from "../models/salary.model.js";
-import wrapper from "../utils/trycatchwrapper.js";
-import { error } from "../utils/errormiddleware.js";
+import wrapper from "../utils/Wrapper.js";
+import { error } from "../utils/errorMiddleware.js";
 
 
 const salesmanagerattendance = wrapper(async(req, res)=>{
@@ -61,6 +61,63 @@ const salesmanagerattendance = wrapper(async(req, res)=>{
 })
 
 
+const makesmattendance = wrapper(async(req, res)=>{
+    
+    const {role, id} = req.user;
+    if(role != 'HR'){
+        throw new error("Only HR can do this action",401);
+    }
+
+    const {date, userid, status} = req.body;
+    if(!date || !userid || !status){
+        throw new error("Please provide complete information:",401);
+    }
+
+    const sm = await Salesmanager.findOne({_id: userid});
+    if(!sm){
+        throw new error("This is not a valid salesmanager",401);
+    }
+
+    const attendance = new Attendance({
+        userid,
+        usertype:'salesmanager',
+        date,
+        status
+    })
+
+    await attendance.save();
+    res.status(200).json({message:"Attendance saved", attendance});
+})
+
+const makelabourattendance = wrapper(async(req, res)=>{
+
+    const {role, id} = req.user;
+    if(role != 'HR'){
+        throw new error("Only HR can do this action",401);
+    }
+
+    const {date, userid, status} = req.body;
+    if(!date || !userid || !status){
+        throw new error("Please provide complete information:",401);
+    }
+
+    const labour = await Labour.findOne({_id: userid});
+    if(!labour){
+        throw new error("This is not a valid Labour",401);
+    }
+
+    const attendance = new Attendance({
+        userid,
+        usertype:'labour',
+        date,
+        status
+    })
+
+    await attendance.save();
+    res.status(200).json({message:"Attendance saved", attendance});
+})
+
+
 const salesmanagersalary = wrapper(async(req, res)=>{
 
     const {role, id} = req.user;
@@ -69,6 +126,7 @@ const salesmanagersalary = wrapper(async(req, res)=>{
     }
 
     const {salaryperday, userid, year, month} = req.query;
+
     if(!userid || !salaryperday || !year || !month){
         throw new error("Please provide complete details:")
     }
@@ -87,7 +145,7 @@ const salesmanagersalary = wrapper(async(req, res)=>{
         throw new error("This is not a valid salesmanager",401);
     }
 
-    const firstdateofmonth = new Date(year, month-1, 1);//javascript take month as 0-indexed:
+    const firstdateofmonth = new Date(year, month-1, 1);//javascript take month as 0-indexed: so if we want 11 then we have to pass 10
     const lastdateofmonth = new Date(year, month, 0);//0th date of next month is last date of previous month:
 
     const attendances = await Attendance.find({
@@ -110,7 +168,16 @@ const salesmanagersalary = wrapper(async(req, res)=>{
     })
 
     const totalsalary = (totalday * salaryperday);
-    res.status(200).json({message:"Salesmanager salary fetched successfully",totalsalary});
+    const salarymonth = new Date(year, month);
+    const salary = new Salary({
+        userid,
+        usertype:'salesmanager',
+        amount:totalsalary,
+        month:salarymonth
+    })
+
+    await salary.save();
+    res.status(200).json({message:"Salesmanager salary fetched successfully",salary});
 
 })
 
@@ -218,7 +285,17 @@ const laboursalary = wrapper(async(req, res)=>{
     })
 
     const totalsalary = (totalday * salaryperday);
-    res.status(200).json({message:"Labour salary fetched successfully",totalsalary});
+    const salarymonth = new Date(year, month);
+    const salary = new Salary({
+        userid,
+        usertype:'labour',
+        amount:totalsalary,
+        month:salarymonth
+    })
+
+    await salary.save();
+
+    res.status(200).json({message:"Labour salary fetched successfully",salary});
 
 })
 
@@ -248,4 +325,4 @@ const getsalesmanagers = wrapper(async(req, res)=>{
 
 })
 
-export {salesmanagerattendance, salesmanagersalary, labourattendance, laboursalary, getlabours, getsalesmanagers}
+export {salesmanagerattendance, salesmanagersalary, labourattendance, laboursalary, getlabours, getsalesmanagers, makelabourattendance, makesmattendance}

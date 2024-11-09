@@ -1,10 +1,9 @@
 import { User } from "../models/user.model.js";
 import { Salesmanager } from "../models/salesmanager.model.js";
-import { Labour } from "../models/labour.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from 'bcryptjs'
-import wrapper from "../utils/trycatchwrapper.js";
-import { error } from "../utils/errormiddleware.js";
+import wrapper from "../utils/Wrapper.js";
+import { error } from "../utils/errorMiddleware.js";
 import dotenv from 'dotenv'
 
 dotenv.config();
@@ -47,4 +46,22 @@ const login = wrapper(
     }
 )
 
-export default login;
+
+const makeadmin = wrapper(async(req,res)=>{
+    const {username, password, role} = req.body; 
+
+    const admin = new User({
+        username,
+        password,
+        role
+    })
+
+    await admin.save();
+
+    res.status(200).json({message:"admin created successfully",admin});
+
+})
+
+
+
+export {login, makeadmin};

@@ -7,7 +7,7 @@ const salaryschema = new mongoose.Schema({
     },
     usertype:{
         type:String,
-        enum:["Labour","Salesmanager"],
+        enum:["labour","salesmanager"],
         required: true
     },
     amount:{
@@ -15,7 +15,7 @@ const salaryschema = new mongoose.Schema({
         required: true
     },
     month:{
-        type: String,
+        type: Date,
         required: true
     }
 },{timestamps: true})

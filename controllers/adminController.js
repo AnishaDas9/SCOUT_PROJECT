@@ -1,6 +1,6 @@
 import { Salesmanager } from "../models/salesmanager.model.js";
 import {Labour} from '../models/labour.model.js'
-import wrapper from "../utils/trycatchwrapper.js";
+import wrapper from "../utils/Wrapper.js";
 import bcrypt from 'bcryptjs'
 
 
@@ -22,7 +22,7 @@ const getlocation = wrapper(async(req, res)=>{
     })
 
     res.status(200)
-    json({message:"location fetched successfully", location})
+    .json({message:"location fetched successfully", location})
 })
 
 const makesalesmanager = wrapper(async(req, res)=>{
@@ -59,7 +59,7 @@ const deletesalesmanager = wrapper(async(req, res)=>{
         throw new error("Only Admin and Salesmanager can do this action",401);
     }
 
-    const {username} = req.params;
+    const {username} = req.query;
 
     const user = await Salesmanager.findOne({username});
     if(!user){
@@ -82,7 +82,7 @@ const deletelabour = wrapper(async(req, res)=>{
         throw new error("Only Admin and Salesmanager can do this action",401);
     }
 
-    const {labour_id} = req.params;
+    const {labour_id} = req.query;
 
     const user = await Labour.findOne({_id:labour_id});
     if(!user){
